@@ -24,12 +24,23 @@
 // After the game is over the player should be prompted if they want to play again.
 
 template<typename T> T get_input(std::string prompt);
-
 bool want_to_play_again();
 void play_hangman();
 std::string get_secret_phrase();
 void ClearScreen();
 std::string make_hidden_phrase(const std::string& phrase);
+bool is_game_over(const struct Hangman& man);
+
+struct Hangman
+{
+    const std::string secret_phrase = "";
+    std::string hidden_phrase = "";
+    int attempts_left = 6;
+
+    Hangman(std::string str) : secret_phrase(str){
+        hidden_phrase = make_hidden_phrase(str);
+    };
+};
 
 int main(int argc, char **argv)
 {
@@ -42,15 +53,21 @@ int main(int argc, char **argv)
 
 void play_hangman()
 {
-    const std::string secret_phrase = get_secret_phrase();
+    struct Hangman hangman(get_secret_phrase());
     ClearScreen();
     
-    std::string  hidden_phrase = make_hidden_phrase(secret_phrase);
+    do // TODO: Read guess and update hidden phrase
+    {
+        std::cout << hangman.hidden_phrase << "\n";
+        char guess = get_input<char>("Type: ");
 
-    // do
-    // {
     //     draw_board()
-    // } while (is_game_over());
+    } while (!is_game_over(hangman));
+}
+
+bool is_game_over(const struct Hangman& man)
+{
+    return man.secret_phrase == man.hidden_phrase || man.attempts_left <= 0;
 }
 
 bool want_to_play_again()
@@ -86,7 +103,11 @@ template<typename T> T get_input(std::string prompt)
     return input;
 }
 
-// TODO: Improve error handling for input
+bool is_alpha_or_blank(char c)
+{
+    return isalpha(c) || isblank(c);
+}
+
 std::string get_secret_phrase()
 {
     std::string phrase = "";
@@ -100,8 +121,7 @@ std::string get_secret_phrase()
         std::transform(phrase.begin(), phrase.end(), phrase.begin(), tolower);
 
         bool is_phrase_alpha = std::find_if_not(phrase.begin(), phrase.end(),
-                               [](const char& c){return isalpha(c) || isblank(c);})
-                                                                == phrase.end();
+                                                is_alpha_or_blank) == phrase.end();
 
         if (std::cin.fail())
         {
@@ -123,7 +143,6 @@ std::string get_secret_phrase()
         {
             failure = false;
         }
-
     } while (failure);
     return phrase;
 }

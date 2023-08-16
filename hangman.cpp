@@ -6,8 +6,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-constexpr int PHRASE_MAX = 255;
-
 // Create the program Hangman. Prompt the player to enter a phrase.
 // That phrase will be hidden by a series of dashes (excluding spaces).
 // The player can then guess letters. If they guess correctly all the letters 
@@ -99,7 +97,7 @@ std::string get_secret_phrase()
         std::cout << "Enter the secret phrase: ";
         std::getline(std::cin, phrase, '\n');
 
-        std::transform(phrase.begin(), phrase.end(), phrase.begin(), toupper);
+        std::transform(phrase.begin(), phrase.end(), phrase.begin(), tolower);
 
         bool is_phrase_alpha = std::find_if_not(phrase.begin(), phrase.end(),
                                [](const char& c){return isalpha(c) || isblank(c);})

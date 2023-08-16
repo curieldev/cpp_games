@@ -1,9 +1,12 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+constexpr int PHRASE_MAX = 255;
 
 // Create the program Hangman. Prompt the player to enter a phrase.
 // That phrase will be hidden by a series of dashes (excluding spaces).
@@ -85,13 +88,46 @@ template<typename T> T get_input(std::string prompt)
     return input;
 }
 
+// TODO: Improve error handling for input
 std::string get_secret_phrase()
 {
-    std::string secret_phrase = "";
-    std::cout << "Enter the secret phrase: ";
-    std::getline(std::cin, secret_phrase, '\n');
+    std::string phrase = "";
 
-    return secret_phrase;
+    bool failure = true;
+    do
+    {
+        std::cout << "Enter the secret phrase: ";
+        std::getline(std::cin, phrase, '\n');
+
+        std::transform(phrase.begin(), phrase.end(), phrase.begin(), toupper);
+
+        bool is_phrase_alpha = std::find_if_not(phrase.begin(), phrase.end(),
+                               [](const char& c){return isalpha(c) || isblank(c);})
+                                                                == phrase.end();
+
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cout << "Input error! Please try again.\n";
+            failure = true;
+        }
+        else if (phrase.length() == 0)
+        {
+            std::cout << "There's no phrase with 0 letters. C'mon try again.\n";
+            failure = true;
+        }
+        else if (!is_phrase_alpha)
+        {
+            std::cout << "Only letters and spaces allowed. Try again.\n";
+            failure = true;
+        }
+        else
+        {
+            failure = false;
+        }
+
+    } while (failure);
+    return phrase;
 }
 
 void ClearScreen()

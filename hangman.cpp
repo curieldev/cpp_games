@@ -30,6 +30,9 @@ std::string get_secret_phrase();
 void ClearScreen();
 std::string make_hidden_phrase(const std::string& phrase);
 bool is_game_over(const struct Hangman& man);
+void insert_letter(Hangman& man, const char& letter);
+void display_result(Hangman& man);
+void draw_gallows(int attempts_left);
 
 struct Hangman
 {
@@ -58,11 +61,69 @@ void play_hangman()
     
     do // TODO: Read guess and update hidden phrase
     {
+        draw_gallows(hangman.attempts_left);
         std::cout << hangman.hidden_phrase << "\n";
-        char guess = get_input<char>("Type: ");
+        std::cout << "You have " << hangman.attempts_left << " attempts left. ";
+        char guess = get_input<char>("Enter your guess: ");
+        if (hangman.secret_phrase.find(guess) != std::string::npos)
+            insert_letter(hangman, guess);
+        else
+            hangman.attempts_left--;
 
     //     draw_board()
     } while (!is_game_over(hangman));
+
+    draw_gallows(hangman.attempts_left);
+    std::cout << "The secret phrase is " << hangman.secret_phrase << ".\n";
+    display_result(hangman);
+}
+
+void draw_gallows(int attempts_left)
+{
+    static std::string gallows = "";
+
+    if (attempts_left == 6)
+    gallows = " +---+ \n"
+              " |   | \n"
+              " |     \n"
+              " |     \n"
+              " |     \n"
+              "-+-\n";
+    if (attempts_left == 5)
+        gallows[21] = 'o';
+    else if (attempts_left == 4)
+        gallows[29] = '|';
+    else if (attempts_left == 3)
+        gallows[28] = '/';
+    else if (attempts_left == 2)
+        gallows[30] = '\\';
+    else if (attempts_left == 1)
+        gallows[38] = '\\';
+    else if (attempts_left == 0)
+        gallows[36] = '/';
+    
+    std::cout << gallows;
+}
+
+void display_result(Hangman& man)
+{
+    std::string result = "";
+
+    if (man.secret_phrase == man.hidden_phrase)
+        result = "You won!";
+    else
+        result = "You lost, try again if you have the guts.";
+    
+    std::cout << result << '\n';
+}
+
+void insert_letter(Hangman& man, const char& letter)
+{
+    for(int i = 0; i < man.secret_phrase.size(); i++)
+    {
+        if (man.secret_phrase[i] == letter)
+            man.hidden_phrase[i] = letter;
+    }
 }
 
 bool is_game_over(const struct Hangman& man)

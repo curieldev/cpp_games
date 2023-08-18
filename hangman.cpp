@@ -2,8 +2,14 @@
 #include <string>
 #include <algorithm>
 
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
+
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <windows.h>
 
 // Create the program Hangman. Prompt the player to enter a phrase.
@@ -51,7 +57,6 @@ int main(int argc, char **argv)
     {
         play_hangman();
     } while (want_to_play_again());
-    
 }
 
 void play_hangman()

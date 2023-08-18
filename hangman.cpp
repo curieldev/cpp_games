@@ -2,7 +2,9 @@
 #include <string>
 #include <algorithm>
 
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
+
 
 #include <windows.h>
 
@@ -57,8 +59,8 @@ void play_hangman()
 {
     struct Hangman hangman(get_secret_phrase());
     ClearScreen();
-    
-    do // TODO: Read guess and update hidden phrase
+
+    do
     {
         draw_gallows(hangman.attempts_left);
         std::cout << hangman.hidden_phrase << "\n";
@@ -68,8 +70,6 @@ void play_hangman()
             insert_letter(hangman, guess);
         else
             hangman.attempts_left--;
-
-    //     draw_board()
     } while (!is_game_over(hangman));
 
     draw_gallows(hangman.attempts_left);
@@ -209,7 +209,7 @@ std::string get_secret_phrase()
 
 void ClearScreen()
 {
-    HANDLE                     hStdOut;
+    HANDLE hStdOut;
 
     hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 

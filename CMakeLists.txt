@@ -11,3 +11,6 @@ add_executable(TheGameOfEight the_game_of_eight.cpp)
 
 project(Hangman VERSION 1.0)
 add_executable(Hangman hangman.cpp)
+
+project(TicTacToe VERSION 1.0)
+add_executable(TicTacToe tictactoe.cpp)

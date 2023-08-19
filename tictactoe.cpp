@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include <array>
 
 constexpr int NUM_OF_SLOTS   = 9;

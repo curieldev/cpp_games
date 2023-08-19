@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 
 // The Game of Eight
 // The game of 8 is played by 2 players. The game starts with the initial number

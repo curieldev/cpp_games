@@ -14,6 +14,8 @@ int main(int argc, char** argv)
     {
         play_tictactoe();
     } while (want_to_play_again());
+
+    return 0;
 }
 
 void play_tictactoe()

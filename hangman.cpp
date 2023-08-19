@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
 void play_hangman()
 {
-    struct Hangman hangman(get_secret_phrase());
+    Hangman hangman(get_secret_phrase());
     ClearScreen();
 
     do

@@ -1,12 +1,34 @@
 #include <iostream>
-#include <vector>
+#include <array>
+
+constexpr int NUM_OF_SLOTS   = 9;
+constexpr int NUM_OF_PLAYERS = 2;
+
+//! Only primitive data types
+template<typename T> T get_value(const std::string& prompt);
+//! Only primitive data types
+template<typename T> T get_value(const std::string& prompt, const T& min, const T& max);
+
+struct TicTacToe
+{
+    std::array<char, NUM_OF_PLAYERS> symbols = {'x', 'o'};
+    std::array<char, NUM_OF_SLOTS> slots;
+    bool player = false; //? false = Player 1, true = Player 2
+    int  turn   = 1;
+    char winner = 0;
+    TicTacToe () 
+    {
+        slots.fill(' ');
+    };
+};
 
 bool want_to_play_again();
-
-template<typename T> T get_value(const std::string prompt); //! Only for primitive data types
-template<typename T> T get_value(const std::string prompt, const T min, const T max); //! Only for primitive data types
 void play_tictactoe();
-void draw_board(const std::vector<char>& slots);
+void draw_board(const std::array<char, NUM_OF_SLOTS>& slots);
+char find_winner(const std::array<char, NUM_OF_SLOTS>& slots);
+void assign_symbols(std::array<char, NUM_OF_PLAYERS>& symbols);
+bool insert_symbol(TicTacToe& tic, const int pos);
+void display_results(const bool player, const int winner);
 
 int main(int argc, char** argv)
 {
@@ -20,70 +42,123 @@ int main(int argc, char** argv)
 
 void play_tictactoe()
 {
-    std::vector<char> slots(9, ' ');
-    bool player = false;
-    std::vector<char> symbols;
+    TicTacToe ttt;
 
-    // TODO: Migrate to get_symbol()
+    assign_symbols(ttt.symbols);
+
+    do
     {
-        int user_selection = 0;
-        do
-        {
-            user_selection = get_value<int>("Choose the symbol for Player 1 (o=1 or x=2): ", 0, 2);
-        } while (!(user_selection == 1 || user_selection == 2));
+        std::cout << "Player " << ttt.player + 1 << " turn.\n";
+        draw_board(ttt.slots);
 
-        if (user_selection == 1)
-        {
-            symbols.push_back('o');
-            symbols.push_back('x');
-        }
-        else
-        {
-            symbols.push_back('x');
-            symbols.push_back('o');
-        }
-    }
-    
+        int position = get_value<int>("Enter the desired position: ", -1, 8);
 
-    while (true)
-    {
-        std::cout << "Player " << player + 1 << " turn.\n";
-        draw_board(slots);
-        int position = get_value<int>("Enter the desired position: ", 0, 8);
+        if(position == -1)
+            break;
 
-        if (slots[position] != ' ')
-        {
-            std::cout << "Please try again with an empty slot.\n";
+        if(!insert_symbol(ttt, position))
             continue;
-        }
-        else
-        {
-            slots[position] = player ? symbols[1] : symbols[0];
-        }
-        player = !player;
+
+        if(ttt.turn >= 5) // At least 5 turns are needed for someone to win.
+            ttt.winner = find_winner(ttt.slots);
+
+        ttt.player = !ttt.player;
+        ttt.turn += 1;
+    } while (!ttt.winner && ttt.turn <= NUM_OF_SLOTS);
+
+    display_results(!ttt.player, ttt.winner); //! undo last player toggle
+    draw_board(ttt.slots);
+}
+
+void assign_symbols(std::array<char, NUM_OF_PLAYERS>& symbols)
+{
+    int selection = 0;
+    selection = get_value<int>("Choose the symbol for Player 1 (o=1, x=2): ", 1, 2);
+
+    if (selection == 1)
+    {
+        std::swap(symbols[0], symbols[1]);
     }
 }
 
-void draw_board(const std::vector<char>& slots)
+bool insert_symbol(TicTacToe& tic, const int pos)
 {
-    std::vector<char> out_slots;
+    bool success = false;
+    if (tic.slots[pos] != ' ')
+    {
+        std::cout << "Please try again with an empty slot.\n";
+    }
+    else
+    {
+        tic.slots[pos] = tic.symbols[tic.player];
+        success = true;
+    }
+    return success;
+}
+
+void display_results(const bool player, const int winner)
+{
+    if (winner)
+        std::cout << "Player " << player + 1 << " won!\n";
+    else
+        std::cout << "No luck guys, no winner this time.\n";
+}
+
+char find_winner(const std::array<char, NUM_OF_SLOTS>& slots)
+{
+    std::array<std::array<int, 3>, 8> winning_paths{{{0, 1, 2},
+                                                     {3, 4, 5},
+                                                     {6, 7, 8},
+                                                     {0, 3, 6},
+                                                     {1, 4, 7},
+                                                     {2, 5, 8},
+                                                     {0, 4, 8},
+                                                     {2, 4, 6}}};
+
+    char winner;
+    bool is_winner_found = false;
+
+    for(int i = 0; i < winning_paths.size(); i++)
+    {
+        winner = 0x7F;
+        for (int j = 0; j < winning_paths[i].size(); j++)
+        {
+            winner &= slots[winning_paths[i][j]];
+        }
+
+        if (winner == 'x' || winner == 'o')
+        {
+            is_winner_found = true;
+            break;
+        }
+    }
+    return is_winner_found ? winner : 0;
+}
+
+void draw_board(const std::array<char, NUM_OF_SLOTS>& slots)
+{
+    std::array<char, NUM_OF_SLOTS> out_slots;
     for (int i = 0; i < slots.size(); i++)
     {
         if(slots[i] != ' ')
-            out_slots.push_back(slots[i]);
+            out_slots[i] = slots[i];
         else
-            out_slots.push_back(i + '0');
+            out_slots[i] = '0' + i;
     }
 
-    std::string board = std::string("+---+---+---+\n") +
-                        "| " + out_slots[0] + " | " + out_slots[1] + " | " + out_slots[2] + " |\n"
-                        "+---+---+---+\n"
-                        "| " + out_slots[3] + " | " + out_slots[4] + " | " + out_slots[5] + " |\n"
-                        "+---+---+---+\n"
-                        "| " + out_slots[6] + " | " + out_slots[7] + " | " + out_slots[8] + " |\n"
-                        "+---+---+---+\n";
-
-    std::cout << board;
+    std::cout << "+---+---+---+\n";
+    std::cout << "| " << out_slots[0] << ' ';
+    std::cout << "| " << out_slots[1] << ' ';
+    std::cout << "| " << out_slots[2] << " |\n";
+    std::cout << "+---+---+---+\n";
+    std::cout << "| " << out_slots[3] << ' ';
+    std::cout << "| " << out_slots[4] << ' ';
+    std::cout << "| " << out_slots[5] << " |\n";
+    std::cout << "+---+---+---+\n";
+    std::cout << "| " << out_slots[6] << ' ';
+    std::cout << "| " << out_slots[7] << ' ';
+    std::cout << "| " << out_slots[8] << " |\n";
+    std::cout << "+---+---+---+\n";
 }
 
 bool want_to_play_again()
@@ -93,7 +168,7 @@ bool want_to_play_again()
     return tolower(user_input) == 'y';
 }
 
-template<typename T> T get_value(const std::string prompt)
+template<typename T> T get_value(const std::string& prompt)
 {
     T input = 0;
     bool failure = true;
@@ -112,14 +187,13 @@ template<typename T> T get_value(const std::string prompt)
             failure = false;
         }
 
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     } while (failure);
-
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     return input;
 }
 
-template<typename T> T get_value(const std::string prompt, const T min, const T max) //! Only for primitive data types
+template<typename T> T get_value(const std::string& prompt, const T& min, const T& max)
 {
     T value = 0;
     bool failure;
@@ -128,6 +202,7 @@ template<typename T> T get_value(const std::string prompt, const T min, const T 
         failure = true;
         std::cout << prompt;
         std::cin >> value;
+
         if (std::cin.fail())
         {
             std::cin.clear();
@@ -143,9 +218,8 @@ template<typename T> T get_value(const std::string prompt, const T min, const T 
             failure = false;
         }
 
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     } while (failure);
-
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     return value;
 }

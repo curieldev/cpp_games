@@ -2,7 +2,6 @@
 #include <random>
 #include <cmath>
 
-
 // Create a program called number guesser.
 // There will be a secret number that is set at the start of the program without any user input.
 // - The secret number should be picked from a certain range.
@@ -32,7 +31,6 @@ int main(int argc, char **argv)
     {
         play_number_guesser();
     } while (want_to_play_again());
-    
 
     return 0;
 }

@@ -5,7 +5,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-
 #include <windows.h>
 
 // Create the program Hangman. Prompt the player to enter a phrase.

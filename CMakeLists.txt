@@ -14,3 +14,6 @@ add_executable(Hangman hangman.cpp)
 
 project(TicTacToe VERSION 1.0)
 add_executable(TicTacToe tictactoe.cpp)
+
+project(Battleship VERSION 1.0)
+add_executable(Battleship battleship.cpp)

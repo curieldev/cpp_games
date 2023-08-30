@@ -6,7 +6,7 @@
 // Battleship
 
 // The game is played on four 10x10 grids by 2 players, with each player having
-// grids each.
+// 2 grids each.
 // The rows of the grid go from A to J in the rows and 1 to 10 in the columns.
 // Each player will arrange their ships on their respective ship board before 
 // the main game starts. Each ship occupies a number of consecutive squares on
@@ -36,18 +36,43 @@
 // is output about what ship was sunk. If all the player's ships have been sunk,
 // the game is over and their opponent wins.
 
+struct Target
+{
+    int x;
+    int y;
+}
 
 // Function Prototypes
 void play_battleship();
-
+bool want_to_play_again();
 
 int main(int argc, char **argv)
 {
-
+    do
+    {
+        play_battleship();
+    } while(want_to_play_again())
     return 0;
 }
 
 void play_battleship()
 {
-
+    do
+    {
+        
+    }while (!is_game_over())
 }
+
+bool want_to_play_again()
+{
+    char user_input = get_value<char>("Want to play again? (y=yes, n=no): ");
+
+    return tolower(user_input) == 'y';
+}
+
+// TODO: Get coordinate from user
+// TODO: Board structure
+//   2 grids each board
+//   Overload board cout
+
+

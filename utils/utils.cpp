@@ -1,4 +1,6 @@
+#include <iostream>
 #include <string>
+#include <limits>
 
 template<typename T> T get_value(const std::string& prompt)
 {

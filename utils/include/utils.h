@@ -4,9 +4,11 @@
 #include <string>
 
 //! Only primitive data types
-template<typename T> T get_value(const std::string& prompt);
+template<typename T> 
+extern T get_value(const std::string& prompt);
 
 //! Only primitive data types
-template<typename T> T get_value(const std::string& prompt, const T& min, const T& max);
+template<typename T> 
+extern T get_value(const std::string& prompt, const T& min, const T& max);
 
 #endif // GAME_UTILS_H

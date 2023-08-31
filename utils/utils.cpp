@@ -2,6 +2,8 @@
 #include <string>
 #include <limits>
 
+#include "utils.h"
+
 template<typename T> T get_value(const std::string& prompt)
 {
     T input = 0;
@@ -57,3 +59,9 @@ template<typename T> T get_value(const std::string& prompt, const T& min, const 
 
     return value;
 }
+
+template char get_value(const std::string&);
+template int get_value(const std::string&);
+template int get_value<int>(const std::string&, const int&, const int&);
+template char get_value<char>(const std::string&, const char&, const char&);
+

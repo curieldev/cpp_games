@@ -36,31 +36,75 @@
 // is output about what ship was sunk. If all the player's ships have been sunk,
 // the game is over and their opponent wins.
 
-struct Target
+struct Position
 {
     int x;
     int y;
-}
+};
+
+enum struct ShipModel
+{
+    AircraftCarrier,
+    Battleship,
+    Cruiser,
+    Destroyer,
+    Submarine
+};
+
+struct Ship
+{
+
+    int size = 0;
+    Position position = {0, 0};
+    ShipModel model;
+    Ship (ShipModel m) : model(m){};
+};
+
+// constexpr int AircraftCarrier = 0;
+// constexpr int Battleship      = 1;
+// constexpr int Cruiser         = 2;
+// constexpr int Destroyer       = 3;
+// constexpr int Submarine       = 4;
+
+struct Board
+{
+    
+    Ship aircraft_carrier = Ship(ShipModel::AircraftCarrier);
+    Ship battleship;
+    Ship cruiser;
+    Ship destroyer;
+    Ship submarine;
+};
 
 // Function Prototypes
 void play_battleship();
 bool want_to_play_again();
+void get_position(Position& p);
 
 int main(int argc, char **argv)
 {
     do
     {
         play_battleship();
-    } while(want_to_play_again())
+    } while (want_to_play_again());
     return 0;
 }
 
 void play_battleship()
 {
+    Position target = {0, 0};
+
+    get_position(target);
     do
     {
         
-    }while (!is_game_over())
+    } while (true); //! TODO: Add stop condition
+}
+
+void get_position(Position& p)
+{
+    p.x = get_value<int>("Enter the x coordinate: ", 0, 10);
+    p.y = get_value<char>("Enter the y coordinate: ", 'a', 'j');
 }
 
 bool want_to_play_again()

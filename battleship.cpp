@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #include "utils.h"
 
@@ -36,52 +37,41 @@
 // is output about what ship was sunk. If all the player's ships have been sunk,
 // the game is over and their opponent wins.
 
-struct Position
-{
-    int x;
-    int y;
-};
+// TODO: Set ships positions
+constexpr int grid_size = 10; // 10x10 grid
+constexpr char const * const grid_space = "   ";
 
-enum struct ShipModel
+enum struct Ship
 {
     AircraftCarrier,
     Battleship,
     Cruiser,
     Destroyer,
-    Submarine
+    Submarine,
+    Unknown,
+    None
 };
 
-struct Ship
+struct Square
 {
-
-    int size = 0;
-    Position position = {0, 0};
-    ShipModel model;
-    Ship (ShipModel m) : model(m){};
+    bool is_hit = false;
+    char show = 'x';
+    Ship ship;
 };
 
-// constexpr int AircraftCarrier = 0;
-// constexpr int Battleship      = 1;
-// constexpr int Cruiser         = 2;
-// constexpr int Destroyer       = 3;
-// constexpr int Submarine       = 4;
-
-struct Board
+struct Player
 {
-    
-    Ship aircraft_carrier = Ship(ShipModel::AircraftCarrier);
-    Ship battleship;
-    Ship cruiser;
-    Ship destroyer;
-    Ship submarine;
+    std::string name = "";
+    Square location[grid_size][grid_size]; // [y][x] or [rows][columns]
+    Square enemy_location[grid_size][grid_size]; // [y][x] or [rows][columns]
 };
 
-// Function Prototypes
 void play_battleship();
 bool want_to_play_again();
-void get_position(Position& p);
+std::string get_name(const std::string& prompt);
+void print_board(const Player& p);
 
-int main(int argc, char **argv)
+int main (int argc, char *argv[])
 {
     do
     {
@@ -92,31 +82,114 @@ int main(int argc, char **argv)
 
 void play_battleship()
 {
-    Position target = {0, 0};
+    
+    Player player_1;
+    Player player_2;
 
-    get_position(target);
-    do
-    {
-        
-    } while (true); //! TODO: Add stop condition
-}
+    std::cout << "Player 1\n";
+    player_1.name = get_name("My name is: ");
+    std::cout << "Player 2\n";
+    player_2.name = get_name("My name is: ");
 
-void get_position(Position& p)
-{
-    p.x = get_value<int>("Enter the x coordinate: ", 0, 10);
-    p.y = get_value<char>("Enter the y coordinate: ", 'a', 'j');
+    print_board(player_1);
 }
 
 bool want_to_play_again()
 {
-    char user_input = get_value<char>("Want to play again? (y=yes, n=no): ");
-
-    return tolower(user_input) == 'y';
+    char c = get_value<char>("Want to play again? (y=yes, n=no): ");
+    return c == 'y';
 }
 
-// TODO: Get coordinate from user
-// TODO: Board structure
-//   2 grids each board
-//   Overload board cout
+bool is_alpha_or_blank(char c)
+{
+    return isalpha(c) || isblank(c);
+}
 
+std::string get_name(const std::string& prompt)
+{
+    std::string name = "";
+
+    bool failure = true;
+    do
+    {
+        std::cout << prompt;
+        std::getline(std::cin, name, '\n');
+
+        bool is_name_alpha = std::find_if_not(name.begin(), name.end(),
+                                                is_alpha_or_blank) == name.end();
+
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cout << "Input error! Please try again.\n";
+            failure = true;
+        }
+        else if (name.length() == 0)
+        {
+            std::cout << "Null is not a name. C'mon try again.\n";
+            failure = true;
+        }
+        else if (!is_name_alpha)
+        {
+            std::cout << "Only letters and spaces allowed. Try again.\n";
+            failure = true;
+        }
+        else
+        {
+            failure = false;
+        }
+    } while (failure);
+    return name;
+}
+
+void print_column_headers()
+{
+    for (int x = 0; x < 10; x++)
+    {
+        std::cout << ' ' << ' ' << ' ' << x;
+    }
+    std::cout << grid_space;
+}
+
+void print_border()
+{
+    std::cout << ' ';
+    for (int x = 0; x < 10; x++)
+    {
+        std::cout << "+---";
+    }
+    std::cout << '+' << grid_space;
+}
+
+void print_row(const Square row[grid_size], int number)
+{
+    std::cout << static_cast<char>(number + 'A') << '|';
+    for (int x = 0; x < 10; x++)
+    {
+         std::cout << ' ' << row[x].show << " |";
+    }
+    std::cout << grid_space;
+}
+
+void print_board(const Player& p)
+{
+    print_column_headers();
+    print_column_headers();
+    std::cout << '\n';
+
+    print_border();
+    print_border();
+    std::cout << '\n';
+
+    for (int y = 0; y < 10; y++)
+    {
+        print_row(p.location[y], y);
+        print_row(p.enemy_location[y], y);
+        std::cout << '\n';
+
+        print_border();
+        print_border();
+        std::cout << '\n';
+    }
+}
 

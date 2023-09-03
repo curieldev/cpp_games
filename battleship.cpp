@@ -144,7 +144,7 @@ std::string get_name(const std::string& prompt)
 
 void print_column_headers()
 {
-    for (int x = 0; x < 10; x++)
+    for (int x = 0; x < grid_size; x++)
     {
         std::cout << ' ' << ' ' << ' ' << x;
     }
@@ -154,7 +154,7 @@ void print_column_headers()
 void print_border()
 {
     std::cout << ' ';
-    for (int x = 0; x < 10; x++)
+    for (int x = 0; x < grid_size; x++)
     {
         std::cout << "+---";
     }
@@ -164,7 +164,7 @@ void print_border()
 void print_row(const Square row[grid_size], int number)
 {
     std::cout << static_cast<char>(number + 'A') << '|';
-    for (int x = 0; x < 10; x++)
+    for (int x = 0; x < grid_size; x++)
     {
          std::cout << ' ' << row[x].show << " |";
     }
@@ -181,7 +181,7 @@ void print_board(const Player& p)
     print_border();
     std::cout << '\n';
 
-    for (int y = 0; y < 10; y++)
+    for (int y = 0; y < grid_size; y++)
     {
         print_row(p.location[y], y);
         print_row(p.enemy_location[y], y);

@@ -38,8 +38,11 @@
 // the game is over and their opponent wins.
 
 // TODO: Set ships positions
-constexpr int grid_size = 10; // 10x10 grid
-constexpr char const * const grid_space = "   ";
+constexpr int cells_per_side = 10; // 10x10 grid
+constexpr char const * const grid_padding = "   ";
+constexpr int fleet_size = 7;
+constexpr int grid_length = 42; // Total characters
+
 
 enum struct Ship
 {
@@ -52,24 +55,37 @@ enum struct Ship
     None
 };
 
-struct Square
+struct ShipPose
+{
+    int x;
+    int y;
+    int orientation;
+};
+
+struct Cell
 {
     bool is_hit = false;
-    char show = 'x';
+    char show = ' ';
     Ship ship;
 };
 
 struct Player
 {
     std::string name = "";
-    Square location[grid_size][grid_size]; // [y][x] or [rows][columns]
-    Square enemy_location[grid_size][grid_size]; // [y][x] or [rows][columns]
+    int ship_health[fleet_size];
+    // [y][x] or [rows][columns]
+    Cell location[cells_per_side][cells_per_side];
+    // [y][x] or [rows][columns]
+    Cell enemy_location[cells_per_side][cells_per_side];
 };
 
 void play_battleship();
 bool want_to_play_again();
 std::string get_name(const std::string& prompt);
 void print_board(const Player& p);
+void init_board(Player& p);
+ShipPose get_pose();
+bool is_pose_valid(const ShipPose& pose, const Player& p);
 
 int main (int argc, char *argv[])
 {
@@ -82,7 +98,6 @@ int main (int argc, char *argv[])
 
 void play_battleship()
 {
-    
     Player player_1;
     Player player_2;
 
@@ -91,7 +106,66 @@ void play_battleship()
     std::cout << "Player 2\n";
     player_2.name = get_name("My name is: ");
 
-    print_board(player_1);
+
+    init_board(player_1);
+}
+
+void init_board(Player& p)
+{
+    print_board(p);
+
+    std::cout << "Establish your Aircraft Carrier position (length 5).\n";
+
+    ShipPose pose;
+
+    do
+    {
+        pose = get_pose();
+    }
+    while (!is_pose_valid(pose, p));
+
+    if (pose.orientation == 0)
+        for (int i = 0; i < 5; i++)
+            p.location[pose.y + i][pose.x].show = 'A';
+    else
+        for (int i = 0; i < 5; i++)
+            p.location[pose.y][pose.x + i].show = 'A';
+
+    print_board(p);
+}
+
+ShipPose get_pose()
+{
+    ShipPose pose;
+
+    std::string orientation_prompt = "orientation (vertical=0, horizontal=1): ";
+    pose.orientation = get_value<int>(orientation_prompt, 0, 1);
+    pose.x = get_value<int>("x position (0-9): ", 0, 9);
+    pose.y = get_value<char>("y position (A-J): ", 'A', 'J') - 'A';
+
+    return pose;
+}
+
+bool is_pose_valid(const ShipPose& pose, const Player& p)
+{
+    bool is_valid = false;
+    if (pose.orientation == 0) // Vertical
+    {
+        is_valid = pose.y + 4 < cells_per_side;
+    }
+    else
+    {
+        is_valid = pose.x + 4 < cells_per_side;
+    }
+
+    if (!is_valid)
+    {
+        clear_screen();
+        print_board(p);
+        std::cout << "Ship is out of bounds, please try again\n";
+    }
+
+    return is_valid;
 }
 
 bool want_to_play_again()
@@ -129,6 +203,11 @@ std::string get_name(const std::string& prompt)
             std::cout << "Null is not a name. C'mon try again.\n";
             failure = true;
         }
+        else if (name.length() > grid_length - 1) // grid length - left padding
+        {
+            std::cout << "Your name is too long buddy, try a shorter one.\n";
+            failure = true;
+        }
         else if (!is_name_alpha)
         {
             std::cout << "Only letters and spaces allowed. Try again.\n";
@@ -144,35 +223,46 @@ std::string get_name(const std::string& prompt)
 
 void print_column_headers()
 {
-    for (int x = 0; x < grid_size; x++)
+    for (int x = 0; x < cells_per_side; x++)
     {
         std::cout << ' ' << ' ' << ' ' << x;
     }
-    std::cout << grid_space;
+    std::cout << ' ' << ' ' << grid_padding;
 }
 
 void print_border()
 {
     std::cout << ' ';
-    for (int x = 0; x < grid_size; x++)
+    for (int x = 0; x < cells_per_side; x++)
     {
         std::cout << "+---";
     }
-    std::cout << '+' << grid_space;
+    std::cout << '+' << grid_padding;
 }
 
-void print_row(const Square row[grid_size], int number)
+void print_row(const Cell row[cells_per_side], int number)
 {
     std::cout << static_cast<char>(number + 'A') << '|';
-    for (int x = 0; x < grid_size; x++)
+    for (int x = 0; x < cells_per_side; x++)
     {
          std::cout << ' ' << row[x].show << " |";
     }
-    std::cout << grid_space;
+    std::cout << grid_padding;
 }
 
 void print_board(const Player& p)
 {
+    clear_screen();
+
+    std::cout << ' ' << p.name;
+
+    for (int i = 0; i < grid_length - p.name.length() - 1; i++)
+        std::cout << ' ';
+
+    std::cout << grid_padding;
+    
+    std::cout << ' ' <<  "Enemy\n";
+
     print_column_headers();
     print_column_headers();
     std::cout << '\n';
@@ -181,7 +271,7 @@ void print_board(const Player& p)
     print_border();
     std::cout << '\n';
 
-    for (int y = 0; y < grid_size; y++)
+    for (int y = 0; y < cells_per_side; y++)
     {
         print_row(p.location[y], y);
         print_row(p.enemy_location[y], y);

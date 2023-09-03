@@ -11,4 +11,7 @@ extern T get_value(const std::string& prompt);
 template<typename T> 
 extern T get_value(const std::string& prompt, const T& min, const T& max);
 
+void clear_screen();
+
 #endif // GAME_UTILS_H
+

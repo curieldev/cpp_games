@@ -40,11 +40,11 @@
 // TODO: Set ships positions
 constexpr int cells_per_side = 10; // 10x10 grid
 constexpr char const * const grid_padding = "   ";
-constexpr int fleet_size = 7;
+constexpr int fleet_size = 5;
 constexpr int grid_length = 42; // Total characters
 
 
-enum struct Ship
+enum struct ShipModel
 {
     AircraftCarrier,
     Battleship,
@@ -53,6 +53,15 @@ enum struct Ship
     Submarine,
     Unknown,
     None
+};
+
+struct Ship
+{
+    std::string name;
+    ShipModel model;
+    int size;
+    int health;
+    char symbol;
 };
 
 struct ShipPose
@@ -66,17 +75,51 @@ struct Cell
 {
     bool is_hit = false;
     char show = ' ';
-    Ship ship;
+    ShipModel model;
 };
 
 struct Player
 {
     std::string name = "";
-    int ship_health[fleet_size];
+    Ship ship[fleet_size];
     // [y][x] or [rows][columns]
     Cell location[cells_per_side][cells_per_side];
     // [y][x] or [rows][columns]
     Cell enemy_location[cells_per_side][cells_per_side];
+
+    Player ()
+    {
+        ship[0].model  = ShipModel::AircraftCarrier;
+        ship[0].name   = "Aircraft Carrier";
+        ship[0].symbol = 'A';
+        ship[0].size   = 5;
+        ship[0].health = 5;
+
+        ship[1].model  = ShipModel::Battleship;
+        ship[1].name   = "Battleship";
+        ship[1].symbol = 'B';
+        ship[1].size   = 4;
+        ship[1].health = 4;
+
+        ship[2].model  = ShipModel::Cruiser;
+        ship[2].symbol = 'C';
+        ship[2].name   = "Cruiser";
+        ship[2].size   = 3;
+        ship[2].health = 3;
+
+        ship[3].model  = ShipModel::Destroyer;
+        ship[3].name   = "Destroyer";
+        ship[3].symbol = 'D';
+        ship[3].size   = 3;
+        ship[3].health = 3;
+
+        ship[4].model  = ShipModel::Submarine;
+        ship[4].name   = "Submarine";
+        ship[4].symbol = 'S';
+        ship[4].size   = 2;
+        ship[4].health = 2;
+    }
+
 };
 
 void play_battleship();
@@ -85,7 +128,7 @@ std::string get_name(const std::string& prompt);
 void print_board(const Player& p);
 void init_board(Player& p);
 ShipPose get_pose();
-bool is_pose_valid(const ShipPose& pose, const Player& p);
+bool is_pose_valid(const ShipPose& pose, const int ship_index, const Player& p);
 
 int main (int argc, char *argv[])
 {
@@ -108,28 +151,34 @@ void play_battleship()
 
 
     init_board(player_1);
+    init_board(player_2);
 }
 
 void init_board(Player& p)
 {
-    print_board(p);
-
-    std::cout << "Establish your Aircraft Carrier position (length 5).\n";
-
-    ShipPose pose;
-
-    do
+    
+    for (int i = 0; i < fleet_size; i++)
     {
-        pose = get_pose();
-    }
-    while (!is_pose_valid(pose, p));
+        print_board(p);
+        std::cout << "Establish your " << p.ship[i].name;
+        std::cout << " position (length " << p.ship[i].size << ").\n";
 
-    if (pose.orientation == 0)
-        for (int i = 0; i < 5; i++)
-            p.location[pose.y + i][pose.x].show = 'A';
-    else
-        for (int i = 0; i < 5; i++)
-            p.location[pose.y][pose.x + i].show = 'A';
+        ShipPose pose;
+        do
+        {
+            pose = get_pose();
+        }
+        while (!is_pose_valid(pose, i, p));
+
+        if (pose.orientation == 0)
+            for (int j = 0; j < p.ship[i].size; j++)
+                p.location[pose.y + j][pose.x].show = p.ship[i].symbol;
+        else
+            for (int j = 0; j < p.ship[i].size; j++)
+                p.location[pose.y][pose.x + j].show = p.ship[i].symbol;
+        clear_screen;
+
+    }
 
     print_board(p);
 }
@@ -146,16 +195,16 @@ ShipPose get_pose()
     return pose;
 }
 
-bool is_pose_valid(const ShipPose& pose, const Player& p)
+bool is_pose_valid(const ShipPose& pose, const int ship_index, const Player& p)
 {
     bool is_valid = false;
     if (pose.orientation == 0) // Vertical
     {
-        is_valid = pose.y + 4 < cells_per_side;
+        is_valid = pose.y + p.ship[ship_index].size - 1 < cells_per_side;
     }
     else
     {
-        is_valid = pose.x + 4 < cells_per_side;
+        is_valid = pose.x + p.ship[ship_index].size - 1 < cells_per_side;
     }
 
     if (!is_valid)
